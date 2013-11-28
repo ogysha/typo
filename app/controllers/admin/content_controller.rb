@@ -155,11 +155,7 @@ class Admin::ContentController < Admin::BaseController
         end
       end
       if params[:merge]
-        begin
-          @article.merge_with(params[:merge_with])
-        rescue => e
-          logger.error(e.message)
-        end
+        @article.merge_with(params[:merge_with])
       end
     end
 

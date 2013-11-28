@@ -104,10 +104,10 @@ class Article < Content
     end
 
     def search_with_pagination(search_hash, paginate_hash)
-      
+
       state = (search_hash[:state] and ["no_draft", "drafts", "published", "withdrawn", "pending"].include? search_hash[:state]) ? search_hash[:state] : 'no_draft'
-      
-      
+
+
       list_function  = ["Article.#{state}"] + function_search_no_draft(search_hash)
 
       if search_hash[:category] and search_hash[:category].to_i > 0
@@ -155,20 +155,20 @@ class Article < Content
     @cached_permalink_url ||= {}
 
     @cached_permalink_url["#{anchor}#{only_path}"] ||= \
-      blog.url_for(permalink_url_options, :anchor => anchor, :only_path => only_path)
+    blog.url_for(permalink_url_options, :anchor => anchor, :only_path => only_path)
   end
 
   def param_array
     @param_array ||=
       [published_at.year,
-                 sprintf('%.2d', published_at.month),
-                 sprintf('%.2d', published_at.day),
-                 permalink].tap \
-      do |params|
-        this = self
-        k = class << params; self; end
-        k.send(:define_method, :to_s) { params[-1] }
-      end
+       sprintf('%.2d', published_at.month),
+       sprintf('%.2d', published_at.day),
+       permalink].tap \
+    do |params|
+      this = self
+      k = class << params; self; end
+      k.send(:define_method, :to_s) { params[-1] }
+    end
   end
 
   def to_param
@@ -333,7 +333,7 @@ class Article < Content
     Article.transaction do
       tags.clear
       tags <<
-      keywords.to_s.scan(/((['"]).*?\2|[\.\w]+)/).collect do |x|
+        keywords.to_s.scan(/((['"]).*?\2|[\.\w]+)/).collect do |x|
         x.first.tr("\"'", '')
       end.uniq.map do |tagword|
         Tag.get(tagword)
@@ -416,6 +416,20 @@ class Article < Content
     user.admin? || user_id == user.id
   end
 
+  def merge_with(id)
+    # TODO: Create new article which is clone of self and add to it's
+    # body body of article with id, and add to it's comments comments
+    # of article with id.
+    # Throw exception if somewhere fails
+    begin
+      a = Article.find(id)
+      self.body += a.body
+      self.comments += a.comments
+    rescue => e
+      logger.error(e.message)
+    end
+  end
+
   protected
 
   def set_published_at
@@ -433,10 +447,10 @@ class Article < Content
 
   def set_defaults
     if self.attributes.include?("permalink") and
-      (self.permalink.blank? or
-       self.permalink.to_s =~ /article-draft/ or
-       self.state == "draft"
-      )
+        (self.permalink.blank? or
+         self.permalink.to_s =~ /article-draft/ or
+         self.state == "draft"
+         )
       set_permalink
     end
     if blog && self.allow_comments.nil?
@@ -467,10 +481,4 @@ class Article < Content
     return from..to
   end
 
-  def merge_with(id)
-    # TODO: Create new article which is clone of self and add to it's
-    # body body of article with id, and add to it's comments comments
-    # of article with id.
-    # Throw exception if somewhere fails
-  end
 end
